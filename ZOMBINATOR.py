@@ -4,11 +4,13 @@ from os.path import join as join_path, dirname
 from Player import Player
 from Level_01 import Level_01
 from Bullet import Bullet
+from Explosion import Explosion
 from Settings import SCREEN_HEIGHT, SCREEN_WIDTH
 from Settings import WHITE, GREEN, YELLOW, LIGHT_GREEN, LIGHT_YELLOW
-from Gui import start, pause, wavescore, moneyscore, endgamescreen, button
+from Gui import start, pause, wavescore, moneyscore, endgamescreen, button, apply_volumes
 from Shop import load_shop_images
 import GameState
+import Audio
 
 pygame.init()
 
@@ -22,6 +24,8 @@ lasersound = pygame.mixer.Sound(
     join_path(dirname(__file__), "Assets", "Audio", "laser.wav")
 )
 load_shop_images()
+Audio.init(lasersound)
+apply_volumes()
 
 
 def main():
@@ -29,6 +33,8 @@ def main():
 
     zombie_list = pygame.sprite.Group()
     bullet_list = pygame.sprite.Group()
+    explosion_list = pygame.sprite.Group()
+    Bullet.effect_group = explosion_list
 
     size = [SCREEN_WIDTH, SCREEN_HEIGHT]
     screen = pygame.display.set_mode(size, pygame.FULLSCREEN)
@@ -57,10 +63,13 @@ def main():
     clock = pygame.time.Clock()
 
     music_path = join_path(
-        dirname(__file__), "Assets", "Audio", "ChasingGhosts.mp3"
+        dirname(__file__),
+        "Assets",
+        "Audio",
+        "723496__tomentum__80s-space-mission-music.wav",
     )
     pygame.mixer.music.load(music_path)
-    pygame.mixer.music.set_volume(0.2)
+    apply_volumes()
     pygame.mixer.music.play(-1)
     startingnow = True
 
@@ -86,8 +95,8 @@ def main():
                     player.jump()
                     GameState.buildingshop = False
                     GameState.sateliteshop = False
-                if event.key == pygame.K_p:
-                    pause(screen)
+                if event.key in (pygame.K_p, pygame.K_ESCAPE):
+                    pause(screen, lasersound)
 
                 if event.key == pygame.K_q:
                     GameState.q = True
@@ -108,10 +117,11 @@ def main():
 
             click = pygame.mouse.get_pressed()
             if click[0] == 1 and reload <= 0:
-                lasersound.play()
+                Audio.play_laser()
                 reload = 15
                 pos = pygame.mouse.get_pos()
-                bullet = Bullet(player.rect.x, player.rect.y + 50, pos[0], pos[1])
+                muzzle_x, muzzle_y = player.get_muzzle_pos()
+                bullet = Bullet(muzzle_x, muzzle_y, pos[0], pos[1], player.suit)
                 active_sprite_list.add(bullet)
                 bullet_list.add(bullet)
 
@@ -126,10 +136,15 @@ def main():
             start(screen)
 
         active_sprite_list.update()
+        explosion_list.update()
 
         for bullet in list(bullet_list):
             zombie_hit_list = pygame.sprite.spritecollide(bullet, zombie_list, False)
             for zombie in zombie_hit_list:
+                Audio.play_explode()
+                explosion_list.add(
+                    Explosion(bullet.rect.centerx, bullet.rect.centery)
+                )
                 zombie.take_damage(player.damage)
                 if zombie.is_dead():
                     zombie.die()
@@ -172,6 +187,7 @@ def main():
 
         current_level.draw(screen)
         active_sprite_list.draw(screen)
+        explosion_list.draw(screen)
 
         if GameState.buildingshop:
             button(

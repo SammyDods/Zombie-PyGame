@@ -18,6 +18,8 @@ LIGHT_RED = (255,0,0)
 YELLOW = (200,200,0)
 LIGHT_YELLOW = (255,255,0)
 LIGHT_GREEN = (34,177,76)
+GRAY = (180, 180, 180)
+DARK_GRAY = (100, 100, 100)
 
 # Text presets
 SMALLFONT = pygame.font.SysFont("comicsansms", 25)

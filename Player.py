@@ -12,7 +12,7 @@ class Player(pygame.sprite.Sprite):
         self.image = pygame.Surface([width, height])
         self.image.fill(WHITE)
         self.health = 100
-        self.damage = 1
+        self.damage = 5
         self.suit = "marki"
         self.rect = self.image.get_rect()
  
@@ -122,6 +122,9 @@ class Player(pygame.sprite.Sprite):
     
         if len(platform_hit_list) > 0 or self.rect.bottom >= SCREEN_HEIGHT:
             self.change_y = -12
+            import Audio
+
+            Audio.play_jump()
 
     #movment
     def go_left(self):
@@ -139,10 +142,19 @@ class Player(pygame.sprite.Sprite):
     def take_damage(self, damage):
         self.health -= damage
 
+    def get_muzzle_pos(self):
+        """Return (x, y) at the gun tip in front of the player."""
+        gun_y = self.rect.y + 75
+        if self.direction == "R":
+            gun_x = self.rect.x + 78
+        else:
+            gun_x = self.rect.x + 2
+        return gun_x, gun_y
+
     def change_suit(self, suit):
 
         self.suit = suit
-        suits_damages = {"marki" : 1, "markii" : 10, "markiii" : 50}
+        suits_damages = {"marki" : 5, "markii" : 10, "markiii" : 50}
 
         self.damage = suits_damages[suit]
         sprite_sheet = SpriteSheet(os.path.join(os.path.dirname(__file__), "Assets", "Sprites" , suit + ".png"))

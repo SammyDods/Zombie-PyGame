@@ -1,6 +1,8 @@
 import pygame
 from os.path import join as join_path, dirname
-from Settings import SCREEN_HEIGHT, WHITE
+from random import randint
+from Settings import SCREEN_HEIGHT, SCREEN_WIDTH, WHITE
+import Audio
 
 
 class Zombie(pygame.sprite.Sprite):
@@ -20,6 +22,8 @@ class Zombie(pygame.sprite.Sprite):
         self.attacktimer = 60
         self.player = None
         self.level = None
+        # Stagger moans so the horde doesn't speak in unison
+        self.moan_timer = randint(45, 240)
 
     def update(self):
         if self.health <= 0:
@@ -35,6 +39,12 @@ class Zombie(pygame.sprite.Sprite):
             self.change = -1 * self.speed
             self.rect.x += self.change
             self.image = self.leftimage
+
+        self.moan_timer -= 1
+        if self.moan_timer <= 0:
+            if -100 < self.rect.centerx < SCREEN_WIDTH + 100:
+                Audio.play_zombie_moan()
+            self.moan_timer = randint(120, 360)
 
     def die(self):
         self.image = pygame.image.load(
