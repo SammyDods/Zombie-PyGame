@@ -4,7 +4,6 @@ from SpriteSheet import SpriteSheet
 from Settings import SCREEN_HEIGHT, WHITE
 
 class Player(pygame.sprite.Sprite):
-    global endgame
     def __init__(self):
  
         super().__init__()
@@ -12,13 +11,13 @@ class Player(pygame.sprite.Sprite):
         height = 200
         self.image = pygame.Surface([width, height])
         self.image.fill(WHITE)
-        self.health = 1
-        self.damage= 1
+        self.health = 100
+        self.damage = 1
+        self.suit = "marki"
         self.rect = self.image.get_rect()
  
         self.change_x = 0
         self.change_y = 0
-        self.level = None
 
         # This holds all the images for the animated walk left/right
         # of our player
@@ -61,11 +60,6 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         
     def update(self):
-        #life
-        global suit
-        if self.health >= 0:
-            endgame= True
-
         # Gravity
         self.calc_grav()
         # Move left/right

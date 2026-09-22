@@ -8,107 +8,90 @@ from random import randint
 from os.path import join as join_path, dirname
 from Settings import WHITE
 
+
 def randspeed():
-    ketchapp = randint(1,3)
-    if ketchapp >2:
+    ketchapp = randint(1, 3)
+    if ketchapp > 2:
         return 6
     else:
         return 3
 
+
 class Level_01(Level):
-    global globalzombie_list
     def __init__(self, player):
- 
         Level.__init__(self, player)
-        background = pygame.image.load(join_path(dirname(__file__), "Assets", "Sprites" ,"background.png")).convert()
-        background=  pygame.transform.scale(background,(5760,1080))
+        background = pygame.image.load(
+            join_path(dirname(__file__), "Assets", "Sprites", "background.png")
+        ).convert()
+        background = pygame.transform.scale(background, (5760, 1080))
         self.background = background
         self.background.set_colorkey(WHITE)
-            
-        #buildings    
-        building_1 = Building(350,350, 3380, 730)
-        building_1.setimage = ( join_path(dirname(__file__), "Assets", "Sprites" ,"emptybuilding.png") )
-        building_1.player = self.player
-        building_1.level = self
-        self.Building_list.add(building_1)
 
-        building_2 = Building(350,350, 3880, 730)
-        building_2.player = self.player
-        building_2.level = self
-        building_2.setimage = ( join_path(dirname(__file__), "Assets", "Sprites" ,"emptybuilding.png") )
-        self.Building_list.add(building_2)
+        building_positions = [3380, 3880, 2380, 1880]
+        for pos_x in building_positions:
+            building = Building(350, 350, pos_x, 730)
+            building.player = self.player
+            building.level = self
+            self.Building_list.add(building)
 
-        building_3 = Building(350,350, 2380, 730)
-        building_3.player = self.player
-        building_3.level = self
-        building_3.setimage = (join_path(dirname(__file__), "Assets", "Sprites" ,"emptybuilding.png") )
-        self.Building_list.add(building_3)
-
-        building_4 = Building(350, 350, 1880, 730)
-        building_4.player =self.player
-        building_4.level = self
-        building_4.setimage = (join_path(dirname(__file__), "Assets", "Sprites" ,"emptybuilding.png"))
-        self.Building_list.add(building_4)   
-
-        #creates Satelite    
-        satelite = Satelite(350,350)
+        satelite = Satelite(350, 350)
         satelite.rect.x = 2880
         satelite.rect.y = 730
         satelite.player = self.player
         satelite.level = self
         self.satelite_list.add(satelite)
 
-        #invisible walls
-        wall = [[350, 350, 550, 730],
-                 [350, 350, 4800, 730],
-                 ]
- 
-        # Go through the array above and add platforms
+        wall = [
+            [350, 350, 550, 730],
+            [350, 350, 4800, 730],
+        ]
+
         for platform in wall:
             block = Platform(platform[0], platform[1])
             block.rect.x = platform[2]
             block.rect.y = platform[3]
             block.player = self.player
-            block.image = pygame.image.load(join_path(dirname(__file__), "Assets", "Sprites" ,"emptyimage.png")).convert_alpha()
+            block.image = pygame.image.load(
+                join_path(dirname(__file__), "Assets", "Sprites", "emptyimage.png")
+            ).convert_alpha()
             self.platform_list.add(block)
-        
-
-        #zombie_1=Zombie(50, 100, 10, 1, "zombie.png")
-        #zombie_1.rect.x = 1880
-        #zombie_1.player =self.player
-        #zombie_1.level = self
-        #self.zombie_list.add(zombie_1)
-        #globalzombie_list.add(zombie_1)
 
     def wavefunc(self, wave, zombie_list):
-            
-        newwave = wave*2
-        for x in range(0,newwave):
-            life = 1+wave*1.5
-            if wave <6:
-                x=80
-                y=160
-                zombieimage = join_path(dirname(__file__), "Assets", "Sprites" ,"zombie.png")
+        newwave = wave * 2
+        for _ in range(0, newwave):
+            life = 1 + wave * 1.5
+            if wave < 6:
+                x = 80
+                y = 160
+                zombieimage = join_path(
+                    dirname(__file__), "Assets", "Sprites", "zombie.png"
+                )
             else:
-                if randint(1,3) == 3:
-                    x=121
-                    y=250
-                    zombieimage= join_path(dirname(__file__), "Assets", "Sprites" ,"largezombie.png")
-                    life = 2*life
+                if randint(1, 3) == 3:
+                    x = 121
+                    y = 250
+                    zombieimage = join_path(
+                        dirname(__file__), "Assets", "Sprites", "largezombie.png"
+                    )
+                    life = 2 * life
                 else:
-                    x=80
-                    y=160
-                    zombieimage = join_path(dirname(__file__), "Assets", "Sprites" ,"zombie.png")
+                    x = 80
+                    y = 160
+                    zombieimage = join_path(
+                        dirname(__file__), "Assets", "Sprites", "zombie.png"
+                    )
             speed = randspeed()
             if speed > 3:
-                life=life/2
-            if zombieimage==join_path(dirname(__file__), "Assets", "Sprites" ,"larezombie.png"):
-                speed=speed/2
-            zombie=Zombie(x,y, life, speed, zombieimage)
-            if randint(1,2) == 1:
-                zombie.rect.x = -4000+randint(1,600)
+                life = life / 2
+            if zombieimage == join_path(
+                dirname(__file__), "Assets", "Sprites", "largezombie.png"
+            ):
+                speed = speed / 2
+            zombie = Zombie(x, y, life, speed, zombieimage)
+            if randint(1, 2) == 1:
+                zombie.rect.x = -4000 + randint(1, 600)
             else:
-                zombie.rect.x = 4000-randint(1,600)
+                zombie.rect.x = 4000 - randint(1, 600)
             zombie.player = self.player
             zombie.level = self
             zombie_list.add(zombie)
