@@ -1,7 +1,9 @@
+import asyncio
 import pygame
 from Settings import SCREEN_WIDTH, SCREEN_HEIGHT, SMALLFONT, MEDFONT, LARGEFONT
 from Settings import WHITE, BLACK, GREEN, LIGHT_GREEN, GRAY, DARK_GRAY, RED, LIGHT_RED
 from Shop import buybuildingwall, buybuildingbank, buymark2, buymark3
+from PlatformCompat import quit_game
 import GameState
 
 
@@ -131,26 +133,24 @@ def apply_volumes(lasersound=None):
     Audio.apply_volumes()
 
 
-def endgamescreen(display, wave):
-    endgame = True
+async def endgamescreen(display, wave):
     cooltext = "You survived " + str(wave) + " waves"
     display.fill(WHITE)
     message_to_screen(display, "DEATH", BLACK, -450, size="large")
     message_to_screen(display, cooltext, BLACK, -300, size="medium")
     message_to_screen(display, "Press q to quit", BLACK, -200, size="small")
     pygame.display.update()
-    while endgame:
+    while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                pygame.quit()
-                quit()
+                quit_game()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_q:
-                    pygame.quit()
-                    quit()
+                    quit_game()
+        await asyncio.sleep(0)
 
 
-def pause(display, lasersound=None):
+async def pause(display, lasersound=None):
     paused = True
     center_x = SCREEN_WIDTH // 2
     slider_width = 500
@@ -163,14 +163,12 @@ def pause(display, lasersound=None):
         just_clicked = False
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                pygame.quit()
-                quit()
+                quit_game()
             if event.type == pygame.KEYDOWN:
                 if event.key in (pygame.K_e, pygame.K_p, pygame.K_ESCAPE):
                     paused = False
                 elif event.key == pygame.K_q:
-                    pygame.quit()
-                    quit()
+                    quit_game()
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 just_clicked = True
 
@@ -214,13 +212,13 @@ def pause(display, lasersound=None):
         if menu_button(
             display, "Quit", center_x - 150, 680, 300, 70, RED, LIGHT_RED, just_clicked
         ):
-            pygame.quit()
-            quit()
+            quit_game()
 
         pygame.display.update()
+        await asyncio.sleep(0)
 
 
-def start(display):
+async def start(display):
     startingtext = True
     message_to_screen(display, "ZOMBINATOR", BLACK, -450, size="large")
     message_to_screen(display, "By Sammy Dods", BLACK, -300, size="medium")
@@ -231,11 +229,10 @@ def start(display):
     while startingtext:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                pygame.quit()
-                quit()
+                quit_game()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     startingtext = False
                 elif event.key == pygame.K_q:
-                    pygame.quit()
-                    quit()
+                    quit_game()
+        await asyncio.sleep(0)

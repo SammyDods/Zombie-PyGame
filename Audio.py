@@ -1,5 +1,5 @@
 """Shared sound effects with volume and pitch helpers."""
-from os.path import join as join_path, dirname
+from os.path import exists, join as join_path, dirname, splitext
 from random import choice
 import pygame
 import GameState
@@ -16,7 +16,18 @@ DEFAULT_SFX_SCALE = 0.1
 
 
 def _audio_path(filename):
-    return join_path(dirname(__file__), "Assets", "Audio", filename)
+    """Prefer .ogg (pygbag/web), fall back to the given extension."""
+    base = join_path(dirname(__file__), "Assets", "Audio")
+    name, ext = splitext(filename)
+    ogg_path = join_path(base, name + ".ogg")
+    given_path = join_path(base, filename)
+    if exists(ogg_path):
+        return ogg_path
+    return given_path
+
+
+def _load_sound(filename):
+    return pygame.mixer.Sound(_audio_path(filename))
 
 
 def _resample(sound, pitch):
@@ -34,16 +45,16 @@ def _resample(sound, pitch):
     return pygame.sndarray.make_sound(pitched)
 
 
-def init(laser_sound):
+def init(laser_sound=None):
     """Load SFX and build pitched zombie variants. Call after mixer init."""
     global _explode_sound, _laser_sound, _zombie_variants, _sfx_sounds
     global _jump_sound, _hover_sound
 
-    _laser_sound = laser_sound
-    _explode_sound = pygame.mixer.Sound(_audio_path("retro-video-game-sfx-explode.wav"))
-    _jump_sound = pygame.mixer.Sound(_audio_path("launching-1.wav"))
-    _hover_sound = pygame.mixer.Sound(_audio_path("button-hover.wav"))
-    base_zombie = pygame.mixer.Sound(_audio_path("zombie-tries-to-talk.wav"))
+    _laser_sound = laser_sound if laser_sound is not None else _load_sound("laser.ogg")
+    _explode_sound = _load_sound("retro-video-game-sfx-explode.ogg")
+    _jump_sound = _load_sound("launching-1.ogg")
+    _hover_sound = _load_sound("button-hover.ogg")
+    base_zombie = _load_sound("zombie-tries-to-talk.ogg")
 
     pitches = (0.75, 0.85, 0.95, 1.05, 1.15, 1.25)
     _zombie_variants = []
@@ -60,6 +71,10 @@ def init(laser_sound):
         (_hover_sound, 1.0),
     ] + [(variant, DEFAULT_SFX_SCALE) for variant in _zombie_variants]
     apply_volumes()
+
+
+def music_path():
+    return _audio_path("723496__tomentum__80s-space-mission-music.ogg")
 
 
 def apply_volumes():

@@ -9,11 +9,22 @@ You're a space marine trying to survive never ending waves of zombies. As the wa
 
 Use q to interact with the various buildings, p to pause (volume controls and quit are in the pause menu).
 
-### Run
+
+### Play
+https://sammydods.itch.io/zombinator
+
+### Run (desktop)
 ```
 pip install pygame numpy
-python ZOMBINATOR.py
+python main.py
 ```
+
+### Run in browser (pygbag / itch.io)
+```
+pip install pygbag pygame-ce numpy
+python -m pygbag .
+```
+Then open http://localhost:8000 in your browser (first load can take a while).
 
 ### Audio credits
 - **80s Space Mission Music** by [Tomentum+](https://freesound.org/people/Tomentum/) — https://freesound.org/s/723496/ — [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) (background music)

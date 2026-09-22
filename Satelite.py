@@ -10,7 +10,7 @@ class Satelite(pygame.sprite.Sprite):
         self.image = pygame.Surface([width, height])
         self.image.fill(RED)
         sateliteimage = pygame.image.load(
-            join_path(dirname(__file__), "Assets", "Sprites", "satelite.png")
+            join_path(dirname(__file__), "Assets", "Sprites", "Satelite.png")
         ).convert_alpha()
         sateliteimage = pygame.transform.scale(sateliteimage, (350, 350))
         self.image = sateliteimage

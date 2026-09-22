@@ -1,5 +1,5 @@
+import asyncio
 import pygame
-from os.path import join as join_path, dirname
 
 from Player import Player
 from Level_01 import Level_01
@@ -9,52 +9,45 @@ from Settings import SCREEN_HEIGHT, SCREEN_WIDTH
 from Settings import WHITE, GREEN, YELLOW, LIGHT_GREEN, LIGHT_YELLOW
 from Gui import start, pause, wavescore, moneyscore, endgamescreen, button, apply_volumes
 from Shop import load_shop_images
+from PlatformCompat import IS_WEB, quit_game
 import GameState
 import Audio
 
-pygame.init()
 
-# Set the height and width of the screen
-size = [SCREEN_WIDTH, SCREEN_HEIGHT]
-screen = pygame.display.set_mode(size, pygame.FULLSCREEN)
-pygame.display.set_caption("Zombinator")
+def create_screen():
+    size = (SCREEN_WIDTH, SCREEN_HEIGHT)
+    # Fullscreen on desktop; windowed (scalable) in the browser for itch.io
+    if IS_WEB:
+        try:
+            screen = pygame.display.set_mode(size, pygame.SCALED)
+        except pygame.error:
+            screen = pygame.display.set_mode(size)
+    else:
+        screen = pygame.display.set_mode(size, pygame.FULLSCREEN)
+    pygame.display.set_caption("ZOMBINATOR")
+    return screen
 
-clock = pygame.time.Clock()
-lasersound = pygame.mixer.Sound(
-    join_path(dirname(__file__), "Assets", "Audio", "laser.wav")
-)
-load_shop_images()
-Audio.init(lasersound)
-apply_volumes()
 
-
-def main():
+async def main():
     pygame.init()
+    screen = create_screen()
+    screen.fill(WHITE)
 
-    zombie_list = pygame.sprite.Group()
+    load_shop_images()
+    Audio.init()
+    apply_volumes()
+
     bullet_list = pygame.sprite.Group()
     explosion_list = pygame.sprite.Group()
     Bullet.effect_group = explosion_list
 
-    size = [SCREEN_WIDTH, SCREEN_HEIGHT]
-    screen = pygame.display.set_mode(size, pygame.FULLSCREEN)
-    screen.fill(WHITE)
-    pygame.display.set_caption("ZOMBINATOR")
-
     player = Player()
-
-    level_list = []
-    level_list.append(Level_01(player))
-
-    current_level_no = 0
-    current_level = level_list[current_level_no]
-
-    # Use the level's zombie group so scrolling/collisions stay in sync
+    level_list = [Level_01(player)]
+    current_level = level_list[0]
     zombie_list = current_level.globalzombie_list
 
     active_sprite_list = pygame.sprite.Group()
     player.level = current_level
-
     player.rect.x = 2500
     player.rect.y = SCREEN_HEIGHT - player.rect.height
     active_sprite_list.add(player)
@@ -62,13 +55,7 @@ def main():
     done = False
     clock = pygame.time.Clock()
 
-    music_path = join_path(
-        dirname(__file__),
-        "Assets",
-        "Audio",
-        "723496__tomentum__80s-space-mission-music.wav",
-    )
-    pygame.mixer.music.load(music_path)
+    pygame.mixer.music.load(Audio.music_path())
     apply_volumes()
     pygame.mixer.music.play(-1)
     startingnow = True
@@ -96,7 +83,7 @@ def main():
                     GameState.buildingshop = False
                     GameState.sateliteshop = False
                 if event.key in (pygame.K_p, pygame.K_ESCAPE):
-                    pause(screen, lasersound)
+                    await pause(screen)
 
                 if event.key == pygame.K_q:
                     GameState.q = True
@@ -133,7 +120,7 @@ def main():
 
         if startingnow:
             startingnow = False
-            start(screen)
+            await start(screen)
 
         active_sprite_list.update()
         explosion_list.update()
@@ -245,13 +232,15 @@ def main():
         wavescore(screen, GameState.wave)
 
         if player.health <= 0:
-            endgamescreen(screen, GameState.wave)
+            await endgamescreen(screen, GameState.wave)
 
         clock.tick(60)
         pygame.display.flip()
+        # Yield to the browser event loop (required by pygbag)
+        await asyncio.sleep(0)
 
-    pygame.quit()
+    quit_game()
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
